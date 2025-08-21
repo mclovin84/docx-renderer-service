@@ -18,13 +18,33 @@ app.get('/health', (req, res) => {
 // Main DOCX rendering endpoint
 app.post('/render-docx', upload.single('template'), (req, res) => {
   try {
-    // Get template file from multipart upload
+    console.log('Request received');
+    console.log('File:', req.file ? 'Present' : 'Missing');
+    console.log('Body data:', req.body.data ? 'Present' : 'Missing');
+    
+    // Check if file was uploaded
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ 
+        error: 'No template file received',
+        details: 'Make sure to send the file as form-data with key "template"'
+      });
+    }
+
+    // Get template file buffer
     const templateBuffer = req.file.buffer;
     
-    // Get JSON data from request body or form field
-    const templateData = typeof req.body.data === 'string' 
-      ? JSON.parse(req.body.data) 
-      : req.body.data || req.body;
+    // Get JSON data from request body
+    let templateData;
+    try {
+      templateData = typeof req.body.data === 'string' 
+        ? JSON.parse(req.body.data) 
+        : req.body.data || {};
+    } catch (parseError) {
+      return res.status(400).json({ 
+        error: 'Invalid JSON data',
+        details: parseError.message
+      });
+    }
 
     console.log('Processing template with data:', templateData);
 
