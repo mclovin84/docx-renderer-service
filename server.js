@@ -69,12 +69,22 @@ app.post('/render-docx', upload.single('template'), (req, res) => {
       compression: 'DEFLATE',
     });
 
-    // Dynamic filename based on full_address
-    const safeAddress = templateData.full_address
-      ? templateData.full_address.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_')
-      : 'Unknown_Address';
+    // Create safe filename with address
+    let filename = 'Letter_of_Intent';
+    if (templateData.full_address) {
+      const safeAddress = templateData.full_address
+        .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special chars
+        .replace(/\s+/g, '_')           // Replace spaces with underscores
+        .toUpperCase();                 // Make uppercase
+      filename = `Letter_of_Intent_-_${safeAddress}`;
+    }
+    filename += '.docx';
+
+    console.log('Generated filename:', filename); // Debug log
+
+    // Set headers for file download
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    res.setHeader('Content-Disposition', `attachment; filename="Letter_of_Intent_-_${safeAddress}.docx"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Length', buffer.length);
 
     // Send the rendered DOCX
