@@ -69,9 +69,12 @@ app.post('/render-docx', upload.single('template'), (req, res) => {
       compression: 'DEFLATE',
     });
 
-    // Set headers for file download
+    // Dynamic filename based on full_address
+    const safeAddress = templateData.full_address
+      ? templateData.full_address.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_')
+      : 'Unknown_Address';
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    res.setHeader('Content-Disposition', 'attachment; filename="rendered-document.docx"');
+    res.setHeader('Content-Disposition', `attachment; filename="Letter_of_Intent_-_${safeAddress}.docx"`);
     res.setHeader('Content-Length', buffer.length);
 
     // Send the rendered DOCX
